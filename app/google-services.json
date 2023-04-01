@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "154837746683",
+    "firebase_url": "https://expense-manager-b6136-default-rtdb.firebaseio.com",
+    "project_id": "expense-manager-b6136",
+    "storage_bucket": "expense-manager-b6136.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:154837746683:android:979b7f12cb439f9f42015e",
+        "android_client_info": {
+          "package_name": "com.example.myapplication2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "154837746683-kctefios31rt3a1cft6frbsg5v4vm1u0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgWhzfYPv_OdfyvPy_tt7UGRAnNhRS2Z0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "154837746683-kctefios31rt3a1cft6frbsg5v4vm1u0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:154837746683:android:6e52211c326ff33042015e",
+        "android_client_info": {
+          "package_name": "com.example.startup"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "154837746683-kctefios31rt3a1cft6frbsg5v4vm1u0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgWhzfYPv_OdfyvPy_tt7UGRAnNhRS2Z0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "154837746683-kctefios31rt3a1cft6frbsg5v4vm1u0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
