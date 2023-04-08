@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var userList: ArrayList<User>
     private lateinit var adapter: UserAdapter
     private lateinit var mAuth: FirebaseAuth
-    private lateinit var mDbRef: DatabaseReference
+    private lateinit var dbRef: DatabaseReference
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         mAuth= FirebaseAuth.getInstance()
-        mDbRef= FirebaseDatabase.getInstance().getReference()
+        dbRef= FirebaseDatabase.getInstance().getReference()
         userList=ArrayList()
         adapter= UserAdapter(this,userList)
 
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         userRecyclerView.adapter=adapter
 
 
-        mDbRef.child("user").addValueEventListener(object : ValueEventListener {
+        dbRef.child("user").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
 
                 userList.clear()

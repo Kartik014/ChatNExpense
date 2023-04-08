@@ -28,55 +28,55 @@ class GroupPage : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_group_page)
-        binding= ActivityGroupPageBinding.inflate(layoutInflater)
+        binding = ActivityGroupPageBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        mAuth= FirebaseAuth.getInstance()
-        dbRef= FirebaseDatabase.getInstance().getReference()
+        mAuth = FirebaseAuth.getInstance()
+        dbRef = FirebaseDatabase.getInstance().getReference()
 
-        val sharedPreferences: SharedPreferences = getSharedPreferences("arrayListString", Context.MODE_PRIVATE)
-        var arrayListString: String? = sharedPreferences.getString("arrayListString",null)
-        var groups: ArrayList<String> = if (arrayListString != null){
+        val sharedPreferences: SharedPreferences =
+            getSharedPreferences("arrayListString", Context.MODE_PRIVATE)
+        var arrayListString: String? = sharedPreferences.getString("arrayListString", null)
+        var groups: ArrayList<String> = if (arrayListString != null) {
             Gson().fromJson(arrayListString, ArrayList::class.java) as ArrayList<String>
-        }
-        else{
+        } else {
             ArrayList()
         }
 
-        adapter= GroupAdapter(this, groups)
+        adapter = GroupAdapter(this, groups)
 
-        GroupRecyclerView=findViewById(R.id.GroupRecyclerView)
-        GroupRecyclerView.layoutManager=LinearLayoutManager(this)
-        GroupRecyclerView.adapter=adapter
+        GroupRecyclerView = findViewById(R.id.GroupRecyclerView)
+        GroupRecyclerView.layoutManager = LinearLayoutManager(this)
+        GroupRecyclerView.adapter = adapter
 
         val mintent = Intent(this, MainActivity::class.java)
-        adapter.setOnItemClickListener(object : GroupAdapter.onItemClickListener{
+        adapter.setOnItemClickListener(object : GroupAdapter.onItemClickListener {
             override fun onItemClick(position: Int) {
-                mintent.putExtra("MESSAGES_CHILD",groups[position])
+                mintent.putExtra("MESSAGES_CHILD", groups[position])
                 startActivity(mintent)
             }
         })
 
         binding.UserDisplay.setOnClickListener {
-            val intent= Intent(this@GroupPage,MainActivity::class.java)
+            val intent = Intent(this@GroupPage, MainActivity::class.java)
             startActivity(intent)
         }
 
         binding.AddBtn.setOnClickListener {
-            val intent= Intent(this@GroupPage,selectingUser::class.java)
+            val intent = Intent(this@GroupPage, selectingUser::class.java)
             startActivity(intent)
         }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu,menu)
+        menuInflater.inflate(R.menu.menu, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if(item.itemId==R.id.logout){
+        if (item.itemId == R.id.logout) {
             mAuth.signOut()
-            val intent= Intent(this@GroupPage, LogIn::class.java)
+            val intent = Intent(this@GroupPage, LogIn::class.java)
             finish()
             startActivity(intent)
             return true

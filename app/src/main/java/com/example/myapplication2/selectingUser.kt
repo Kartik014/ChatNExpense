@@ -19,7 +19,7 @@ class selectingUser : AppCompatActivity() {
     private lateinit var userSelected: ArrayList<String>
     private lateinit var adapter: Addadapter
     private lateinit var mAuth: FirebaseAuth
-    private lateinit var mDbRef: DatabaseReference
+    private lateinit var dbRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +28,7 @@ class selectingUser : AppCompatActivity() {
         setContentView(binding.root)
 
         mAuth= FirebaseAuth.getInstance()
-        mDbRef= FirebaseDatabase.getInstance().getReference()
+        dbRef= FirebaseDatabase.getInstance().getReference()
         userList=ArrayList()
         userSelected=ArrayList()
         adapter= Addadapter(this,userList,userSelected)
@@ -39,7 +39,7 @@ class selectingUser : AppCompatActivity() {
         userRecyclerView.adapter=adapter
 
 
-        mDbRef.child("user").addValueEventListener(object : ValueEventListener {
+        dbRef.child("user").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
 
                 userList.clear()

@@ -10,22 +10,23 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import kotlin.random.Random
 
-class MyFirebaseMessagingService: FirebaseMessagingService() {
+class MyFirebaseMessagingService : FirebaseMessagingService() {
 
-    private val channelId= "12345"
+    private val channelId = "12345"
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
-        val intent= Intent(this,MainActivity::class.java)
+        val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        val manager= getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val notificationId= Random.nextInt()
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationId = Random.nextInt()
 
         createNotificationChannel(manager)
 
-        val intent1= PendingIntent.getActivities(this,0, arrayOf(intent), PendingIntent.FLAG_IMMUTABLE)
+        val intent1 =
+            PendingIntent.getActivities(this, 0, arrayOf(intent), PendingIntent.FLAG_IMMUTABLE)
 
-        val Notification= NotificationCompat.Builder(this,channelId)
+        val Notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle(message.data["title"])
             .setContentText(message.data["body"])
             .setSmallIcon(R.drawable.ic_lchat_logo_foreground)
@@ -33,14 +34,15 @@ class MyFirebaseMessagingService: FirebaseMessagingService() {
             .setContentIntent(intent1)
             .build()
 
-        manager.notify(notificationId,Notification)
+        manager.notify(notificationId, Notification)
     }
 
-    private fun createNotificationChannel(manager: NotificationManager){
-        val channel= NotificationChannel(channelId,"ABCD",NotificationManager.IMPORTANCE_HIGH).apply {
-            description="New Chat"
-            enableLights(true)
-        }
+    private fun createNotificationChannel(manager: NotificationManager) {
+        val channel =
+            NotificationChannel(channelId, "ABCD", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "New Chat"
+                enableLights(true)
+            }
         manager.createNotificationChannel(channel)
     }
 }

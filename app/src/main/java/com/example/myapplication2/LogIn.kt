@@ -23,44 +23,43 @@ class LogIn : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log_in)
 
-        mAuth= FirebaseAuth.getInstance()
+        mAuth = FirebaseAuth.getInstance()
 
-        edPassword=findViewById(R.id.edPassword)
-        btLogIn=findViewById(R.id.btLogIn)
-        etEmail=findViewById(R.id.edEmail)
-        signup=findViewById(R.id.signup)
+        edPassword = findViewById(R.id.edPassword)
+        btLogIn = findViewById(R.id.btLogIn)
+        etEmail = findViewById(R.id.edEmail)
+        signup = findViewById(R.id.signup)
 
-        signup.setOnClickListener{
-            val intent= Intent(this,SignUp::class.java)
+        signup.setOnClickListener {
+            val intent = Intent(this, SignUp::class.java)
             startActivity(intent)
         }
 
         btLogIn.setOnClickListener {
-            val email=etEmail.text.toString()
-            val password=edPassword.text.toString()
+            val email = etEmail.text.toString()
+            val password = edPassword.text.toString()
 
-            login(email,password)
+            login(email, password)
         }
     }
 
     override fun onStart() {
         super.onStart()
-        if(mAuth.currentUser!=null){
-            val intent= Intent(this@LogIn,MainActivity::class.java)
+        if (mAuth.currentUser != null) {
+            val intent = Intent(this@LogIn, MainActivity::class.java)
             startActivity(intent)
             finish()
         }
     }
 
-    private fun login(email: String, password: String){
+    private fun login(email: String, password: String) {
         mAuth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this){task->
-                if(task.isSuccessful){
-                    val intent=Intent(this@LogIn, MainActivity::class.java)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    val intent = Intent(this@LogIn, MainActivity::class.java)
                     startActivity(intent)
-                }
-                else{
-                    Toast.makeText(this@LogIn,"User does not exist",Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@LogIn, "User does not exist", Toast.LENGTH_SHORT).show()
                 }
             }
     }

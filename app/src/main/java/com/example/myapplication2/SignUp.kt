@@ -21,56 +21,65 @@ class SignUp : AppCompatActivity() {
     private lateinit var edpassword: EditText
     private lateinit var btSignUp: Button
     private lateinit var mAuth: FirebaseAuth
-    private lateinit var mDbRef: DatabaseReference
+    private lateinit var dbRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
 
-        mAuth= FirebaseAuth.getInstance()
+        mAuth = FirebaseAuth.getInstance()
 
-        edname=findViewById(R.id.edname)
-        edemail=findViewById(R.id.edemail)
-        edpassword=findViewById(R.id.edpassword)
-        btSignUp=findViewById(R.id.btSignUp)
+        edname = findViewById(R.id.edname)
+        edemail = findViewById(R.id.edemail)
+        edpassword = findViewById(R.id.edpassword)
+        btSignUp = findViewById(R.id.btSignUp)
 
         btSignUp.setOnClickListener {
-            val name= edname.text.toString()
-            val email=edemail.text.toString()
-            val password=edpassword.text.toString()
+            val name = edname.text.toString()
+            val email = edemail.text.toString()
+            val password = edpassword.text.toString()
 
-            signup(name,email,password)
+            signup(name, email, password)
         }
 
     }
 
-    private fun signup(name: String, email: String, password: String){
-        mAuth.createUserWithEmailAndPassword(email,password)
-            .addOnCompleteListener(this){task->
-                if(task.isSuccessful){
-                    FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener{ task->
-                        if(!task.isSuccessful){
+    private fun signup(name: String, email: String, password: String) {
+        mAuth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+                        if (!task.isSuccessful) {
                             return@OnCompleteListener
                         }
-                        val fcmToken= task.result
+                        val fcmToken = task.result
 
-                        addUserToDatabase(name, email, mAuth.currentUser?.uid!!, "",fcmToken)
+                        addUserToDatabase(name, email, mAuth.currentUser?.uid!!, "", fcmToken)
 
                     })
 
-                    val intent= Intent(this@SignUp, MainActivity::class.java)
+                    val intent = Intent(this@SignUp, MainActivity::class.java)
                     finish()
                     startActivity(intent)
-                }
-                else{
-                    val errorMessage= task.exception?.message
-                    Toast.makeText(this@SignUp,"Authenticatication Failed:$errorMessage",Toast.LENGTH_SHORT).show()
+                } else {
+                    val errorMessage = task.exception?.message
+                    Toast.makeText(
+                        this@SignUp,
+                        "Authenticatication Failed:$errorMessage",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
     }
 
-    private fun addUserToDatabase(name: String, email: String, uid: String, groupname: String, fcmToken: String){
-        mDbRef= FirebaseDatabase.getInstance().getReference()
-        mDbRef.child("user").child(uid).setValue(User(name,email,uid,groupname,fcmToken))
+    private fun addUserToDatabase(
+        name: String,
+        email: String,
+        uid: String,
+        groupname: String,
+        fcmToken: String
+    ) {
+        dbRef = FirebaseDatabase.getInstance().getReference()
+        dbRef.child("user").child(uid).setValue(User(name, email, uid, groupname, fcmToken))
     }
 }

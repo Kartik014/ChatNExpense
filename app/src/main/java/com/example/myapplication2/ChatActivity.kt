@@ -26,61 +26,62 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var dbRef: DatabaseReference
     private var receiveruid: String? = null
     private var senderuid: String? = null
-    private var fcmtoken: String?=""
-    private var senderTitle: String?=""
+    private var fcmtoken: String? = ""
+    private var senderTitle: String? = ""
 
-    var receiverRoom: String?= null
-    var senderRoom: String?= null
+    var receiverRoom: String? = null
+    var senderRoom: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
 
-        dbRef= FirebaseDatabase.getInstance().getReference()
+        dbRef = FirebaseDatabase.getInstance().getReference()
 
-        val name= intent.getStringExtra("name")
-        receiveruid= intent.getStringExtra("uid")
-        senderuid= FirebaseAuth.getInstance().currentUser?.uid
+        val name = intent.getStringExtra("name")
+        receiveruid = intent.getStringExtra("uid")
+        senderuid = FirebaseAuth.getInstance().currentUser?.uid
 
-        senderRoom= receiveruid+ senderuid
-        receiverRoom=senderuid+ receiveruid
+        senderRoom = receiveruid + senderuid
+        receiverRoom = senderuid + receiveruid
 
-        supportActionBar?.title= name
+        supportActionBar?.title = name
         supportActionBar!!.setBackgroundDrawable(ColorDrawable(Color.parseColor("#301E67")))
 
-        chatRecyclerView= findViewById(R.id.chatRecyclerView)
-        messageBox= findViewById(R.id.messageBox)
-        sendButton= findViewById(R.id.sentButton)
-        messageList= ArrayList()
-        messageAdapter= MessageAdapter(this,messageList)
+        chatRecyclerView = findViewById(R.id.chatRecyclerView)
+        messageBox = findViewById(R.id.messageBox)
+        sendButton = findViewById(R.id.sentButton)
+        messageList = ArrayList()
+        messageAdapter = MessageAdapter(this, messageList)
 
-        chatRecyclerView.layoutManager= LinearLayoutManager(this)
-        chatRecyclerView.adapter= messageAdapter
+        chatRecyclerView.layoutManager = LinearLayoutManager(this)
+        chatRecyclerView.adapter = messageAdapter
 
 
-        dbRef.child("user").child(receiveruid!!).child("fcmToken").addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val token = dataSnapshot.getValue(String::class.java)
-                if (token != null) {
-                    fcmtoken= token
-                    //Log.d(TAG, "fcmToken: $fcmToken")
+        dbRef.child("user").child(receiveruid!!).child("fcmToken")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val token = dataSnapshot.getValue(String::class.java)
+                    if (token != null) {
+                        fcmtoken = token
+                        //Log.d(TAG, "fcmToken: $fcmToken")
+                    } else {
+                        Log.e(TAG, "FCM token is null")
+                    }
                 }
-                else {
-                    Log.e(TAG, "FCM token is null")
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e(TAG, "Failed to get FCM token: ${databaseError.message}")
                 }
-            }
-            override fun onCancelled(databaseError: DatabaseError) {
-                Log.e(TAG, "Failed to get FCM token: ${databaseError.message}")
-            }
-        })
+            })
 
         dbRef.child("chats").child(senderRoom!!).child("messages")
-            .addValueEventListener(object: ValueEventListener{
+            .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
 
                     messageList.clear()
-                    for (postSnapshot in snapshot.children){
-                        val message= postSnapshot.getValue(Message::class.java)
+                    for (postSnapshot in snapshot.children) {
+                        val message = postSnapshot.getValue(Message::class.java)
                         messageList.add(message!!)
                     }
                     messageAdapter.notifyDataSetChanged()
@@ -93,24 +94,25 @@ class ChatActivity : AppCompatActivity() {
 
         sendButton.setOnClickListener {
 
-            val message= messageBox.text.toString()
-            dbRef.child("user").child(senderuid!!).child("name").addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val title = dataSnapshot.getValue(String::class.java)
-                    if (title != null) {
-                        senderTitle= title
-                        //Log.d(TAG, "fcmToken: $fcmToken")
+            val message = messageBox.text.toString()
+            dbRef.child("user").child(senderuid!!).child("name")
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        val title = dataSnapshot.getValue(String::class.java)
+                        if (title != null) {
+                            senderTitle = title
+                            //Log.d(TAG, "fcmToken: $fcmToken")
+                        } else {
+                            Log.e(TAG, "Title is null")
+                        }
                     }
-                    else {
-                        Log.e(TAG, "Title is null")
-                    }
-                }
-                override fun onCancelled(databaseError: DatabaseError) {
-                    Log.e(TAG, "Failed to get Title: ${databaseError.message}")
-                }
-            })
 
-            val messageObject= Message(message,senderuid)
+                    override fun onCancelled(databaseError: DatabaseError) {
+                        Log.e(TAG, "Failed to get Title: ${databaseError.message}")
+                    }
+                })
+
+            val messageObject = Message(message, senderuid)
 
             dbRef.child("chats").child(senderRoom!!).child("messages").push()
                 .setValue(messageObject).addOnSuccessListener {
@@ -118,7 +120,10 @@ class ChatActivity : AppCompatActivity() {
                         .setValue(messageObject)
                 }
 
-            PushNotification(NotificationData(senderTitle.toString(),message),fcmtoken.toString()).also {
+            PushNotification(
+                NotificationData(senderTitle.toString(), message),
+                fcmtoken.toString()
+            ).also {
                 SendNotification(it)
             }
             messageBox.setText("")
@@ -126,20 +131,19 @@ class ChatActivity : AppCompatActivity() {
 
     }
 
-    private fun SendNotification(notification: PushNotification) = CoroutineScope(Dispatchers.IO).launch {
-        try {
-            val response = ApiUtilities.api.sendNotification(notification)
-            if(response.isSuccessful) {
+    private fun SendNotification(notification: PushNotification) =
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = ApiUtilities.api.sendNotification(notification)
+                if (response.isSuccessful) {
 //                Log.d(TAG, "Response: ${Gson().toJson(response)}")
-            }
-            else {
-                val errorMessage = response.errorBody()?.string()
-                Log.e(TAG, "Error message: $errorMessage")
-                Log.e(TAG, "Response code: ${response.code()}")
+                } else {
+                    val errorMessage = response.errorBody()?.string()
+                    Log.e(TAG, "Error message: $errorMessage")
+                    Log.e(TAG, "Response code: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, e.toString())
             }
         }
-        catch(e: Exception) {
-            Log.e(TAG, e.toString())
-        }
-    }
 }
