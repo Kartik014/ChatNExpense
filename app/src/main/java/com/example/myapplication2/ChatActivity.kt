@@ -1,10 +1,14 @@
 package com.example.myapplication2
 
 import android.content.ContentValues.TAG
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.EditText
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -47,6 +51,7 @@ class ChatActivity : AppCompatActivity() {
 
         supportActionBar?.title = name
         supportActionBar!!.setBackgroundDrawable(ColorDrawable(Color.parseColor("#301E67")))
+        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
         chatRecyclerView = findViewById(R.id.chatRecyclerView)
         messageBox = findViewById(R.id.messageBox)
@@ -129,6 +134,37 @@ class ChatActivity : AppCompatActivity() {
             messageBox.setText("")
         }
 
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_chat, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_call -> {
+                dbRef.child("user").child(receiveruid!!).child("phoneNo")
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(dataSnapshot: DataSnapshot) {
+                            val phoneNumber = dataSnapshot.getValue(String::class.java)
+                            if (phoneNumber != null) {
+                                val callIntent = Intent(Intent.ACTION_CALL)
+                                callIntent.data = Uri.parse("tel:$phoneNumber")
+                                startActivity(callIntent)
+                            } else {
+                                Log.e(TAG, "Phone number is null")
+                            }
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            //Error Message
+                        }
+                    })
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun SendNotification(notification: PushNotification) =

@@ -20,6 +20,7 @@ class SignUp : AppCompatActivity() {
     private lateinit var edemail: EditText
     private lateinit var edpassword: EditText
     private lateinit var btSignUp: Button
+    private lateinit var phoneNo: EditText
     private lateinit var mAuth: FirebaseAuth
     private lateinit var dbRef: DatabaseReference
 
@@ -33,18 +34,20 @@ class SignUp : AppCompatActivity() {
         edemail = findViewById(R.id.edemail)
         edpassword = findViewById(R.id.edpassword)
         btSignUp = findViewById(R.id.btSignUp)
+        phoneNo= findViewById(R.id.phoneNo)
 
         btSignUp.setOnClickListener {
             val name = edname.text.toString()
             val email = edemail.text.toString()
+            val PhoneNo= phoneNo.text.toString()
             val password = edpassword.text.toString()
 
-            signup(name, email, password)
+            signup(name, email, PhoneNo, password)
         }
 
     }
 
-    private fun signup(name: String, email: String, password: String) {
+    private fun signup(name: String, email: String, PhoneNo:String, password: String) {
         mAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
@@ -54,7 +57,7 @@ class SignUp : AppCompatActivity() {
                         }
                         val fcmToken = task.result
 
-                        addUserToDatabase(name, email, mAuth.currentUser?.uid!!, "", fcmToken)
+                        addUserToDatabase(name, email, mAuth.currentUser?.uid!!, PhoneNo,"", fcmToken)
 
                     })
 
@@ -76,10 +79,11 @@ class SignUp : AppCompatActivity() {
         name: String,
         email: String,
         uid: String,
+        PhoneNo: String,
         groupname: String,
         fcmToken: String
     ) {
         dbRef = FirebaseDatabase.getInstance().getReference()
-        dbRef.child("user").child(uid).setValue(User(name, email, uid, groupname, fcmToken))
+        dbRef.child("user").child(uid).setValue(User(name, email, uid, PhoneNo, groupname, fcmToken))
     }
 }
