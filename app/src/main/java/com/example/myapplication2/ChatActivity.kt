@@ -1,5 +1,6 @@
 package com.example.myapplication2
 
+import android.app.Activity
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.graphics.Color
@@ -11,9 +12,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.myapplication2.R.id.action_call
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -28,7 +32,12 @@ class ChatActivity : AppCompatActivity() {
 
     private lateinit var chatRecyclerView: RecyclerView
     private lateinit var messageBox: EditText
+    private lateinit var user1_info: TextView
+    private lateinit var user1_amount: TextView
+    private lateinit var user2_info: TextView
+    private lateinit var user2_amount: TextView
     private lateinit var sendButton: ImageView
+    private lateinit var splitButton: ImageView
     private lateinit var messageAdapter: MessageAdapter
     private lateinit var messageList: ArrayList<Message>
     private lateinit var dbRef: DatabaseReference
@@ -37,8 +46,12 @@ class ChatActivity : AppCompatActivity() {
     private var fcmtoken: String? = ""
     private var senderTitle: String? = ""
 
+    val Request_Code = 1
     var receiverRoom: String? = null
     var senderRoom: String? = null
+    var TextMessage: String? = null
+    var amount: Double = 0.0
+    var temp_amount: Double = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,8 +73,16 @@ class ChatActivity : AppCompatActivity() {
         chatRecyclerView = findViewById(R.id.chatRecyclerView)
         messageBox = findViewById(R.id.messageBox)
         sendButton = findViewById(R.id.sentButton)
+        splitButton = findViewById(R.id.splitButton)
         messageList = ArrayList()
         messageAdapter = MessageAdapter(this, messageList)
+        user1_info = findViewById(R.id.user_info1)
+        user2_info = findViewById(R.id.user_info2)
+        user1_amount = findViewById(R.id.bill_info1)
+        user2_amount = findViewById(R.id.bill_info2)
+
+        user1_info.setText("You owe an amount of -")
+        user2_info.setText(name + " owe an amount of -")
 
         chatRecyclerView.layoutManager = LinearLayoutManager(this)
         chatRecyclerView.adapter = messageAdapter
@@ -99,6 +120,12 @@ class ChatActivity : AppCompatActivity() {
 
                 }
             })
+
+        splitButton.setOnClickListener {
+            Toast.makeText(this@ChatActivity, "Clicked", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this@ChatActivity, SplitBills::class.java)
+            startActivityForResult(intent, Request_Code)
+        }
 
         sendButton.setOnClickListener {
 
@@ -139,35 +166,69 @@ class ChatActivity : AppCompatActivity() {
 
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == Request_Code && resultCode == Activity.RESULT_OK) {
+            TextMessage = data?.getStringExtra("message")
+            amount = data?.getStringExtra("amount")?.toDouble()!!
+            Toast.makeText(this@ChatActivity, "$amount", Toast.LENGTH_SHORT).show()
+            temp_amount += amount / 2
+            user2_amount.setText("${(temp_amount)}")
+        }
+        if (TextMessage != null) {
+            val message = TextMessage
+            val messageObject = Message(message, senderuid)
+
+            dbRef.child("chats").child(senderRoom!!).child("messages").push()
+                .setValue(messageObject).addOnSuccessListener {
+                    dbRef.child("chats").child(receiverRoom!!).child("messages").push()
+                        .setValue(messageObject)
+                }
+
+            PushNotification(
+                NotificationData(senderTitle.toString(), message),
+                fcmtoken.toString()
+            ).also {
+                SendNotification(it)
+            }
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_chat, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_call -> {
-                dbRef.child("user").child(receiveruid!!).child("phoneNo")
-                    .addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onDataChange(dataSnapshot: DataSnapshot) {
-                            val phoneNumber = dataSnapshot.getValue(String::class.java)
-                            if (phoneNumber != null) {
-                                val callIntent = Intent(Intent.ACTION_CALL)
-                                callIntent.data = Uri.parse("tel:$phoneNumber")
-                                startActivity(callIntent)
-                            } else {
-                                Log.e(TAG, "Phone number is null")
-                            }
-                        }
 
-                        override fun onCancelled(error: DatabaseError) {
-                            //Error Message
+        if (item.itemId == android.R.id.home) {
+            onBackPressed()
+            return true
+        } else if (item.itemId == action_call) {
+            dbRef.child("user").child(receiveruid!!).child("phoneNo")
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        val phoneNumber = dataSnapshot.getValue(String::class.java)
+                        if (phoneNumber != null) {
+                            val callIntent = Intent(Intent.ACTION_CALL)
+                            callIntent.data = Uri.parse("tel:$phoneNumber")
+                            startActivity(callIntent)
+                        } else {
+                            Log.e(TAG, "Phone number is null")
                         }
-                    })
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        //Error Message
+                    }
+                })
+            return true
+        } else if (item.itemId == R.id.split) {
+
         }
+
+        return super.onOptionsItemSelected(item)
     }
 
     private fun SendNotification(notification: PushNotification) =

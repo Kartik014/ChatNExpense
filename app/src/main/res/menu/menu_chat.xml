@@ -7,4 +7,10 @@
         android:orderInCategory="100"
         android:title="Call"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/split"
+        android:title="Bills"
+        android:orderInCategory="100"/>
+
 </menu>
