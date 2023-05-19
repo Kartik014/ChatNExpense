@@ -2,7 +2,9 @@ package com.example.myapplication2
 
 import android.app.Activity
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
@@ -10,8 +12,11 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -41,6 +46,9 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var messageAdapter: MessageAdapter
     private lateinit var messageList: ArrayList<Message>
     private lateinit var dbRef: DatabaseReference
+    private lateinit var layout1: LinearLayout
+    private lateinit var layout2: Button
+    private lateinit var btnSettle: Button
     private var receiveruid: String? = null
     private var senderuid: String? = null
     private var fcmtoken: String? = ""
@@ -52,6 +60,7 @@ class ChatActivity : AppCompatActivity() {
     var TextMessage: String? = null
     var amount: Double = 0.0
     var temp_amount: Double = 0.0
+    var flag: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,12 +83,15 @@ class ChatActivity : AppCompatActivity() {
         messageBox = findViewById(R.id.messageBox)
         sendButton = findViewById(R.id.sentButton)
         splitButton = findViewById(R.id.splitButton)
-        messageList = ArrayList()
-        messageAdapter = MessageAdapter(this, messageList)
         user1_info = findViewById(R.id.user_info1)
         user2_info = findViewById(R.id.user_info2)
         user1_amount = findViewById(R.id.bill_info1)
         user2_amount = findViewById(R.id.bill_info2)
+        layout1 = findViewById(R.id.bills_info)
+        layout2 = findViewById(R.id.settle)
+        btnSettle = findViewById(R.id.settle)
+        messageList = ArrayList()
+        messageAdapter = MessageAdapter(this, messageList)
 
         user1_info.setText("You owe an amount of -")
         user2_info.setText(name + " owe an amount of -")
@@ -164,18 +176,116 @@ class ChatActivity : AppCompatActivity() {
             messageBox.setText("")
         }
 
+//        btnSettle.setOnClickListener {
+//            user1_amount.setText("0.0")
+//
+//        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        var tempAmount: String? = null
 
         if (requestCode == Request_Code && resultCode == Activity.RESULT_OK) {
             TextMessage = data?.getStringExtra("message")
             amount = data?.getStringExtra("amount")?.toDouble()!!
-            Toast.makeText(this@ChatActivity, "$amount", Toast.LENGTH_SHORT).show()
-            temp_amount += amount / 2
-            user2_amount.setText("${(temp_amount)}")
+            temp_amount = amount / 2
+            val sharedPreferences = getSharedPreferences("Amount", Context.MODE_PRIVATE)
+            val editor: SharedPreferences.Editor = sharedPreferences.edit()
+            val oldAmount = sharedPreferences.getFloat("temp_amount", 0f)
+            val newAmount = oldAmount + temp_amount.toFloat()
+            editor.putFloat("temp_amount", newAmount)
+            editor.apply()
+            tempAmount = sharedPreferences.getFloat("temp_amount", 0f).toString()
         }
+
+        val BillObject = Bills(tempAmount, senderuid)
+
+        dbRef.child("amounts").child(senderRoom!!).child("bills").push()
+            .setValue(BillObject).addOnSuccessListener {
+                dbRef.child("amounts").child(receiverRoom!!).child("bills").push()
+                    .setValue(BillObject)
+            }
+
+        dbRef.child("amounts").child(senderRoom!!).child("bills")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    var senderBillAmount: String? = null
+                    var receiverBillAmount: String? = null
+                    for (billSnapshot in dataSnapshot.children) {
+                        val billsData = billSnapshot.getValue(Bills::class.java)
+                        if (billsData != null) {
+                            val billAmount = billsData.amount
+                            val senderId = billsData.senderId
+
+                            Toast.makeText(this@ChatActivity, "${billAmount}", Toast.LENGTH_LONG)
+                                .show()
+                            Toast.makeText(this@ChatActivity, "${senderId}", Toast.LENGTH_LONG)
+                                .show()
+
+                            if (senderuid == senderId) {
+                                senderBillAmount = billAmount
+                                user2_amount.text = billAmount
+                            } else if (receiveruid == senderId) {
+                                receiverBillAmount = billAmount
+                                user1_amount.text = billAmount
+                            }
+                        }
+                    }
+
+                    if (senderBillAmount != null) {
+                        user2_amount.text = senderBillAmount
+                    }
+
+                    if (receiverBillAmount != null) {
+                        user1_amount.text = receiverBillAmount
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.d("TAG", "${error.message}")
+                }
+            })
+
+        btnSettle.setOnClickListener {
+            val sharedPreferences = getSharedPreferences("Amount", Context.MODE_PRIVATE)
+            val editor: SharedPreferences.Editor = sharedPreferences.edit()
+            editor.putFloat("temp_amount", 0f)
+            editor.apply()
+
+            dbRef.child("amounts").child(senderRoom!!).child("bills")
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        for (billSnapshot in dataSnapshot.children) {
+                            val billsData = billSnapshot.getValue(Bills::class.java)
+                            if (billsData != null && billsData.senderId == senderuid) {
+                                billSnapshot.ref.removeValue()
+                                val receiverBillsRef =
+                                    dbRef.child("amounts").child(receiverRoom!!).child("bills")
+                                receiverBillsRef.orderByChild("senderId").equalTo(senderuid)
+                                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                                        override fun onDataChange(receiverSnapshot: DataSnapshot) {
+                                            for (receiverBillSnapshot in receiverSnapshot.children) {
+                                                receiverBillSnapshot.ref.removeValue()
+                                            }
+                                        }
+
+                                        override fun onCancelled(error: DatabaseError) {
+                                            Log.d(
+                                                "TAG", "Error removing receiver bill data: ${error.message}"
+                                            )
+                                        }
+                                    })
+                            }
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.d("TAG", "Error removing sender bill data: ${error.message}")
+                    }
+                })
+        }
+
         if (TextMessage != null) {
             val message = TextMessage
             val messageObject = Message(message, senderuid)
@@ -225,7 +335,15 @@ class ChatActivity : AppCompatActivity() {
                 })
             return true
         } else if (item.itemId == R.id.split) {
-
+            if (flag) {
+                layout1.visibility = View.VISIBLE
+                layout2.visibility = View.VISIBLE
+                flag = false
+            } else {
+                layout1.visibility = View.GONE
+                layout2.visibility = View.GONE
+                flag = true
+            }
         }
 
         return super.onOptionsItemSelected(item)

@@ -6,64 +6,81 @@
     tools:context=".ChatActivity">
 
     <LinearLayout
-        android:id="@+id/bills_info"
+        android:id="@+id/bills"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_alignParentTop="true"
-        android:orientation="vertical"
         android:background="#FF04126A">
 
         <LinearLayout
-            android:id="@+id/user1_bills_details"
-            android:layout_width="match_parent"
+            android:id="@+id/bills_info"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <TextView
-                android:id="@+id/user_info1"
-                android:layout_width="250dp"
-                android:layout_height="30dp"
-                android:hint="You Owe an amount of -"
-                android:textColor="@color/white"
-                android:textSize="15dp"
-                android:textAlignment="center"/>
+            android:orientation="vertical"
+            android:visibility="gone">
 
-            <TextView
-                android:id="@+id/bill_info1"
+            <LinearLayout
+                android:id="@+id/user1_bills_details"
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:hint="00"
-                android:textColor="@color/white"
-                android:textSize="15dp"/>
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/user_info1"
+                    android:layout_width="220dp"
+                    android:layout_height="30dp"
+                    android:hint="You Owe an amount of -"
+                    android:textColor="@color/white"
+                    android:textSize="12dp"
+                    android:textAlignment="center"/>
+
+                <TextView
+                    android:id="@+id/bill_info1"
+                    android:layout_width="50dp"
+                    android:layout_height="30dp"
+                    android:hint="00"
+                    android:textColor="@color/white"
+                    android:textSize="15dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/user2_bills_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/user_info2"
+                    android:layout_width="220dp"
+                    android:layout_height="30dp"
+                    android:hint="User Owe an amount of -"
+                    android:textColor="@color/white"
+                    android:textSize="12dp"
+                    android:textAlignment="center"/>
+
+                <TextView
+                    android:id="@+id/bill_info2"
+                    android:layout_width="50dp"
+                    android:layout_height="30dp"
+                    android:hint="00"
+                    android:textColor="@color/white"
+                    android:textSize="15dp"/>
+            </LinearLayout>
+
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/user2_bills_details"
+        <Button
+            android:id="@+id/settle"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <TextView
-                android:id="@+id/user_info2"
-                android:layout_width="250dp"
-                android:layout_height="30dp"
-                android:hint="User Owe an amount of -"
-                android:textColor="@color/white"
-                android:textSize="15dp"
-                android:textAlignment="center"/>
-
-            <TextView
-                android:id="@+id/bill_info2"
-                android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:hint="00"
-                android:textColor="@color/white"
-                android:textSize="15dp"/>
-        </LinearLayout>
+            android:layout_height="60.5dp"
+            android:layout_weight="1"
+            android:text="SETTLE"
+            android:visibility="gone"/>
 
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRecyclerView"
-        android:layout_below="@+id/bills_info"
+        android:layout_below="@+id/bills"
         android:layout_above="@+id/LinearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
