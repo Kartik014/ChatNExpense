@@ -175,11 +175,6 @@ class ChatActivity : AppCompatActivity() {
             }
             messageBox.setText("")
         }
-
-//        btnSettle.setOnClickListener {
-//            user1_amount.setText("0.0")
-//
-//        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -217,11 +212,6 @@ class ChatActivity : AppCompatActivity() {
                         if (billsData != null) {
                             val billAmount = billsData.amount
                             val senderId = billsData.senderId
-
-                            Toast.makeText(this@ChatActivity, "${billAmount}", Toast.LENGTH_LONG)
-                                .show()
-                            Toast.makeText(this@ChatActivity, "${senderId}", Toast.LENGTH_LONG)
-                                .show()
 
                             if (senderuid == senderId) {
                                 senderBillAmount = billAmount
@@ -272,7 +262,8 @@ class ChatActivity : AppCompatActivity() {
 
                                         override fun onCancelled(error: DatabaseError) {
                                             Log.d(
-                                                "TAG", "Error removing receiver bill data: ${error.message}"
+                                                "TAG",
+                                                "Error removing receiver bill data: ${error.message}"
                                             )
                                         }
                                     })
@@ -330,7 +321,7 @@ class ChatActivity : AppCompatActivity() {
                     }
 
                     override fun onCancelled(error: DatabaseError) {
-                        //Error Message
+
                     }
                 })
             return true
