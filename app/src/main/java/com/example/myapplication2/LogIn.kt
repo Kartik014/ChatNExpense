@@ -39,7 +39,10 @@ class LogIn : AppCompatActivity() {
             val email = etEmail.text.toString()
             val password = edPassword.text.toString()
 
-            login(email, password)
+            if(email!=null&&password!=null)
+                login(email, password)
+            else
+                Toast.makeText(this@LogIn, "Enter email or password", Toast.LENGTH_SHORT).show()
         }
     }
 

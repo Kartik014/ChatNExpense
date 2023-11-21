@@ -76,7 +76,7 @@ class ChatActivity : AppCompatActivity() {
         receiverRoom = senderuid + receiveruid
 
         supportActionBar?.title = name
-        supportActionBar!!.setBackgroundDrawable(ColorDrawable(Color.parseColor("#301E67")))
+        supportActionBar!!.setBackgroundDrawable(ColorDrawable(Color.parseColor("#BE00EEEE")))
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
         chatRecyclerView = findViewById(R.id.chatRecyclerView)
@@ -141,37 +141,39 @@ class ChatActivity : AppCompatActivity() {
 
         sendButton.setOnClickListener {
 
-            val message = messageBox.text.toString()
-            dbRef.child("user").child(senderuid!!).child("name")
-                .addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(dataSnapshot: DataSnapshot) {
-                        val title = dataSnapshot.getValue(String::class.java)
-                        if (title != null) {
-                            senderTitle = title
-                            //Log.d(TAG, "fcmToken: $fcmToken")
-                        } else {
-                            Log.e(TAG, "Title is null")
+            var message = messageBox.text.toString()
+            if (message != "") {
+                dbRef.child("user").child(senderuid!!).child("name")
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(dataSnapshot: DataSnapshot) {
+                            val title = dataSnapshot.getValue(String::class.java)
+                            if (title != null) {
+                                senderTitle = title
+                                //Log.d(TAG, "fcmToken: $fcmToken")
+                            } else {
+                                Log.e(TAG, "Title is null")
+                            }
                         }
+
+                        override fun onCancelled(databaseError: DatabaseError) {
+                            Log.e(TAG, "Failed to get Title: ${databaseError.message}")
+                        }
+                    })
+
+                val messageObject = Message(message, senderuid)
+
+                dbRef.child("chats").child(senderRoom!!).child("messages").push()
+                    .setValue(messageObject).addOnSuccessListener {
+                        dbRef.child("chats").child(receiverRoom!!).child("messages").push()
+                            .setValue(messageObject)
                     }
 
-                    override fun onCancelled(databaseError: DatabaseError) {
-                        Log.e(TAG, "Failed to get Title: ${databaseError.message}")
-                    }
-                })
-
-            val messageObject = Message(message, senderuid)
-
-            dbRef.child("chats").child(senderRoom!!).child("messages").push()
-                .setValue(messageObject).addOnSuccessListener {
-                    dbRef.child("chats").child(receiverRoom!!).child("messages").push()
-                        .setValue(messageObject)
+                PushNotification(
+                    NotificationData(senderTitle.toString(), message),
+                    fcmtoken.toString()
+                ).also {
+                    SendNotification(it)
                 }
-
-            PushNotification(
-                NotificationData(senderTitle.toString(), message),
-                fcmtoken.toString()
-            ).also {
-                SendNotification(it)
             }
             messageBox.setText("")
         }

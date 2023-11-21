@@ -4,7 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:background="@drawable/circular_border_bg"
+    android:layout_marginBottom="5dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginRight="8dp"
+    android:layout_marginLeft="8dp"
+    android:paddingTop="8dp"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp">
 
     <TextView
         android:layout_marginTop="5dp"
@@ -12,6 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="ABC"
+        android:textColor="@color/white"
         android:textSize="30sp"
         android:textStyle="bold"
         android:layout_marginLeft="10dp"/>
